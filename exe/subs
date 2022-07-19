@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require "thor"
+require "substrate"
+
+Substrate::CLI.start(ARGV)
