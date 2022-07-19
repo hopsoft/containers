@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    myenv (0.1.0)
+    substrate (0.1.0)
       thor (~> 1.2.1)
 
 GEM
@@ -88,7 +88,7 @@ GEM
     timers (4.3.3)
     traces (0.4.1)
     tty-screen (0.8.1)
-    tzinfo (2.0.4)
+    tzinfo (2.0.5)
       concurrent-ruby (~> 1.0)
 
 PLATFORMS
@@ -97,9 +97,9 @@ PLATFORMS
 DEPENDENCIES
   github_changelog_generator (~> 1.16.4)
   minitest (~> 5.0)
-  myenv!
   rake (~> 13.0)
   ruby_jard (~> 0.3.1)
+  substrate!
 
 BUNDLED WITH
-   2.3.10
+   2.3.17
