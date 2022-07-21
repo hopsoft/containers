@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
-require_relative "lib/substrate/version"
+require_relative "lib/containers/version"
 
 Gem::Specification.new do |gem|
-  gem.name = "substrate"
-  gem.version = Substrate::VERSION
+  gem.name = "containers"
+  gem.version = Containers::VERSION
   gem.authors = ["Hopsoft"]
   gem.email = ["natehop@gmail.com"]
 
   gem.summary = "Manage local development environments with Docker"
   gem.description = "Manage local development environments with Docker"
-  gem.homepage = "https://github.com/hopsoft/substrate"
+  gem.homepage = "https://github.com/hopsoft/containers"
   gem.license = "MIT"
   gem.required_ruby_version = ">= 2.6.0"
 
@@ -31,6 +31,7 @@ Gem::Specification.new do |gem|
   gem.executables = gem.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   gem.require_paths = ["lib"]
 
+  gem.add_dependency "rainbow", "~> 3.1.1"
   gem.add_dependency "thor", "~> 1.2.1"
 
   gem.add_development_dependency "github_changelog_generator", "~> 1.16.4"

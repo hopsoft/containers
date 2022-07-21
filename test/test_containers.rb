@@ -2,8 +2,8 @@
 
 require "test_helper"
 
-class TestSubstrate < Minitest::Test
+class TestContainers < Minitest::Test
   def test_that_it_has_a_version_number
-    refute_nil ::Substrate::VERSION
+    refute_nil ::Containers::VERSION
   end
 end
