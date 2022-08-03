@@ -1,5 +1,7 @@
 # Containers
 
+WIP: Use at your own risk!
+
 ## TODOs
 
 ### Questions to prompt on generate
@@ -11,8 +13,8 @@
 
 ```
 containers generate compose
-containers add anycable
-containers remove anycable
+containers add RECIPE [URL]
+containers remove RECIPE
 ```
 
 - [ ] sinatra?
