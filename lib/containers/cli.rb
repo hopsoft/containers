@@ -6,6 +6,8 @@ require_relative "./generator"
 
 module Containers
   class CLI < Thor
+    COMMAND_PREFIX = "▶"
+
     alias_method :execute, :exec
 
     desc "generate", "Commands used to generate files for the project"
@@ -22,12 +24,23 @@ module Containers
     end
 
     desc "list", "Lists all containers for this project"
-    method_option :type, type: :string, enum: %w[short full detailed], aliases: "-t", default: "short", desc: "The type of container list to display"
+    method_option :detailed, type: :boolean, aliases: "-d", desc: "List detailed container information"
+    method_option :service, type: :boolean, aliases: "-s", desc: "List container service names"
     def list(*args)
-      return execute_command "docker ps -a | grep #{project_name}" if options[:type] == "detailed"
-      list = `containers list -t detailed`.split("\n")
-      return puts list.map { |item| item.split(" ").last }.sort.join("\n") if options[:type] == "full"
-      puts list.map { |item| item.split(" ").last.sub(/\A#{project_name}-/, "") }.sort.join("\n")
+      return execute_command "docker ps -a | grep #{project_name}" if options[:detailed]
+
+      if options[:service]
+        command = "containers list -f"
+        puts_command "#{command} | #{Rainbow("(strip project name)").green.faint}"
+        list = `#{command}`.split("\n").reject { |item| item.strip == "" || item.include?(COMMAND_PREFIX) }
+        puts list.map { |item| item.gsub(/\A#{project_name}-|\s/, "") }.sort.join("\n")
+        return
+      end
+
+      command = "containers list -d"
+      puts_command "#{command} | #{Rainbow("(strip docker details)").green.faint}"
+      list = `#{command}`.split("\n").reject { |item| item.strip == "" || item.include?(COMMAND_PREFIX) }
+      puts list.map { |item| item.split(" ").last.strip }.sort.join("\n")
     end
 
     desc "inspect", "Inspects a container"
@@ -45,40 +58,67 @@ module Containers
     desc "exec", "Executes a command in a container"
     method_option :container, type: :string, aliases: "-c", default: "shell", desc: "The short name for the container"
     def exec(*args)
+      options[:container] = "shell" if options[:container].to_s.strip == ""
       execute_command "docker exec -it #{project_name}-#{options[:container]} #{args.join " "}"
     end
 
-    desc "tail", "Tails a container's logs"
-    method_option :container, type: :string, aliases: "-c", required: true, desc: "The short name for the container"
+    desc "tail", "Tails container logs"
+    method_option :container, type: :array, aliases: "-c", required: true, desc: "The short name for the container (also supports a list of names)"
     def tail(*args)
-      execute_command "docker logs -f #{args.join " "} #{project_name}-#{options[:container]}"
+      args << "--since 5m" unless args.include?("--since")
+      execute_command "docker compose logs #{args.join " "} -f #{options[:container].join " "}"
     end
 
     desc "start", "Starts container(s)"
     method_option :container, type: :string, aliases: "-c", desc: "The short name for the container"
     def start(*args)
       return execute_command "docker start #{args.join " "} #{project_name}-#{options[:container]}" if options[:container]
-      containers = `containers list -t full`.split("\n")
-      containers.each { |c| execute_command "docker start #{args.join " "} #{c}" }
+      container_names.each { |c| execute_command "docker start #{args.join " "} #{c}", replace_current_process: false }
     end
 
     desc "stop", "Stops container(s)"
     method_option :container, type: :string, aliases: "-c", desc: "The short name for the container"
     def stop(*args)
       return execute_command "docker stop #{args.join " "} #{project_name}-#{options[:container]}" if options[:container]
-      containers = `containers list -t full`.split("\n")
-      containers.each { |c| execute_command "docker stop #{args.join " "} #{c}" }
+      container_names.each { |c| execute_command "docker stop #{args.join " "} #{c}", replace_current_process: false }
     end
 
     desc "restart", "Restarts container(s)"
-    method_option :container, type: :string, aliases: "-c", desc: "The short name for the container"
+    method_option :container, type: :array, aliases: "-c", desc: "A list of container short names"
     def restart(*args)
-      return execute_command "docker restart #{args.join " "} #{project_name}-#{options[:container]}" if options[:container]
-      containers = `containers list -t full`.split("\n")
-      containers.each { |c| execute_command "docker restart #{args.join " "} #{c}" }
+      containers = options[:container] || container_names
+      containers.each { |c| execute_command "docker restart #{args.join " "} #{c}", replace_current_process: false }
+    end
+
+    desc "bash", "Starts a bash shell"
+    method_option :container, type: :string, aliases: "-c", default: "shell", desc: "The short name for the container"
+    def bash(*args)
+      execute_command "containers exec -c #{options[:container]} bash #{args.join " "}"
+    end
+
+    desc "bundle", "Runs the bundle command"
+    method_option :container, type: :string, aliases: "-c", default: "shell", desc: "The short name for the container"
+    def bundle(*args)
+      execute_command "containers exec -c #{options[:container]} bundle #{args.join " "}"
+    end
+
+    desc "yarn", "Runs the yarn command"
+    method_option :container, type: :string, aliases: "-c", default: "shell", desc: "The short name for the container"
+    def yarn(*args)
+      execute_command "containers exec -c #{options[:container]} yarn #{args.join " "}"
+    end
+
+    desc "rails", "Runs the Rails command"
+    method_option :container, type: :string, aliases: "-c", default: "shell", desc: "The short name for the container"
+    def rails(*args)
+      execute_command "containers bundle -c #{options[:container]} exec rails #{args.join " "}"
     end
 
     private
+
+    def container_names
+      `containers list -f`.split("\n")
+    end
 
     def project_name
       squish(File.basename(Dir.pwd)).gsub(/\s|_/, "-")
@@ -88,10 +128,14 @@ module Containers
       string.gsub(/\s+/, " ").strip
     end
 
-    def execute_command(command)
+    def execute_command(command, replace_current_process: true)
       command = squish(command)
-      puts "\n#{Rainbow("→").faint} #{Rainbow(command).cyan}\n\n"
-      execute command
+      puts_command command
+      replace_current_process ? execute(command) : puts(`#{command}`)
+    end
+
+    def puts_command(command)
+      puts "#{Rainbow(COMMAND_PREFIX).green.faint} #{Rainbow(command).green.bright}"
     end
   end
 end

@@ -1,6 +1,5 @@
 #!/usr/bin/env ruby
 
-require "thor"
 require "containers"
 
 Containers::CLI.start(ARGV)

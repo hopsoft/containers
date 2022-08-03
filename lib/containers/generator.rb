@@ -19,8 +19,8 @@ class Generator < Thor
     File.write path, render("Dockerfile", ruby_version: ruby_version)
   end
 
-  desc "docker_compose", "Creates a docker-compose.yml file for the project"
-  def docker_compose
+  desc "compose", "Creates a docker-compose.yml file for the project"
+  def compose
   end
 
   private

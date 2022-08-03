@@ -1,0 +1,217 @@
+version: "3.9"
+
+# Ports exposed on the host machine
+#
+# Note: These can be overridden with environment variables
+#
+# - PORT_RAILS=3000 ...... The primary Rails web application
+# - PORT_ANYCABLE=3001 ... The AnyCable server
+# - PORT_LOGS=3002 ....... Web interface for viewing all Docker container logs
+
+x-default-env: &default_env
+  BUNDLE_PATH: /bundle
+  EDITOR: /usr/bin/vim
+
+x-default-app: &default_app
+  build: .
+  image: <%= organization_name %>/<%= project_name %>
+  working_dir: /<%= project_name %>
+  tty: true
+  stdin_open: true
+  env_file: .env
+  environment:
+    <<: *default_env
+  networks:
+    - main
+  volumes:
+    - ./:/<%= project_name %>:cached
+    - bundle:/bundle:delegated
+    - node_modules:/<%= project_name %>/node_modules:delegated
+
+networks:
+  main:
+
+# TODO: dump pg database then rename db -> postgres
+volumes:
+  bundle:
+  db:
+  node_modules:
+  redis_cable:
+  redis_cache:
+  redis_queue:
+
+services:
+  # ----------------------------------------------------------------------------
+  # Postgres - Primary database server
+  # ----------------------------------------------------------------------------
+  postgres:
+    image: postgres:13.4-alpine3.14
+    container_name: <%= project_name %>-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: password
+    networks:
+      - main
+    expose:
+      - 5432
+    volumes:
+      - db:/var/lib/postgresql/data:delegated
+
+  # ----------------------------------------------------------------------------
+  # Redis - ActionCable datastore
+  # ----------------------------------------------------------------------------
+  redis_cable:
+    image: redis:6.2.6-alpine3.14
+    container_name: <%= project_name %>-redis-cable
+    restart: unless-stopped
+    networks:
+      - main
+    expose:
+      - 6379
+    volumes:
+      - redis_cable:/data:delegated
+      - ./config/redis-queue.conf:/usr/local/etc/redis/redis.conf:cached
+
+  # ----------------------------------------------------------------------------
+  # Redis - Cache datastore
+  # ----------------------------------------------------------------------------
+  redis_cache:
+    image: redis:6.2.6-alpine3.14
+    container_name: <%= project_name %>-redis-cache
+    restart: unless-stopped
+    networks:
+      - main
+    expose:
+      - 6379
+    volumes:
+      - redis_cache:/data:delegated
+      - ./config/redis-cache.conf:/usr/local/etc/redis/redis.conf:cached
+
+  # ----------------------------------------------------------------------------
+  # Redis - Queue datastore
+  # ----------------------------------------------------------------------------
+  redis_queue:
+    image: redis:6.2.6-alpine3.14
+    container_name: <%= project_name %>-redis-queue
+    restart: unless-stopped
+    networks:
+      - main
+    expose:
+      - 6379
+    volumes:
+      - redis_queue:/data:delegated
+      - ./config/redis-queue.conf:/usr/local/etc/redis/redis.conf:cached
+
+  # ----------------------------------------------------------------------------
+  # Shell - Intended for tinkering and running misc commands
+  # ----------------------------------------------------------------------------
+  shell:
+    <<: *default_app
+    container_name: <%= project_name %>-shell
+    command: /bin/bash -c "tail -f /dev/null"
+
+  # ----------------------------------------------------------------------------
+  # JavaScript - Builds JavaScript assets
+  # ----------------------------------------------------------------------------
+  js:
+    <<: *default_app
+    container_name: <%= project_name %>-js
+    command: /bin/bash -c "yarn && yarn build --watch"
+
+  # ----------------------------------------------------------------------------
+  # CSS - Builds CSS stylesheet assets
+  # ----------------------------------------------------------------------------
+  css:
+    <<: *default_app
+    container_name: <%= project_name %>-css
+    command: /bin/bash -c "yarn build:css --watch"
+    depends_on:
+      - js
+
+  # ----------------------------------------------------------------------------
+  # Rails - The primary Rails web application
+  # ----------------------------------------------------------------------------
+  web:
+    <<: *default_app
+    container_name: <%= project_name %>-web
+    command: >
+      /bin/bash -c "bundle &&
+                    rm -f tmp/pids/server.pid &&
+                    touch tmp/caching-dev.txt &&
+                    bin/rails log:clear &&
+                    bin/rails db:create db:migrate &&
+                    bin/rails s --binding=0.0.0.0 --port=3000"
+    environment:
+      <<: *default_env
+    ports:
+      - ${PORT_RAILS_WEB:-3000}:3000
+    depends_on:
+      - postgres
+      - redis_cable
+      - redis_cache
+      - redis_queue
+      - js
+      - css
+
+  # ----------------------------------------------------------------------------
+  # Rails - Sidekiq worker for: config/sidekiq.yml
+  # ----------------------------------------------------------------------------
+  worker:
+    <<: *default_app
+    container_name: <%= project_name %>-worker
+    command: /bin/bash -c "bin/rails log:clear &&
+                           bundle exec sidekiq -C config/sidekiq.yml"
+    depends_on:
+      - web
+
+  # ----------------------------------------------------------------------------
+  # Anycable - Web socket server
+  # ----------------------------------------------------------------------------
+  anycable_ws:
+    image: anycable/anycable-go:1.2
+    container_name: <%= project_name %>-anycable-ws
+    restart: unless-stopped
+    environment:
+      ANYCABLE_HOST: "0.0.0.0"
+      ANYCABLE_REDIS_URL: redis://redis_cable:6379/0
+      ANYCABLE_RPC_HOST: anycable_rpc:50051
+      ANYCABLE_DEBUG: 1
+    networks:
+      - main
+    ports:
+      - ${PORT_ANYCABLE:-3001}:8080
+    depends_on:
+      - redis_cable
+
+  # ----------------------------------------------------------------------------
+  # Anycable - Web socket gRPC server (bridge to ws server)
+  # ----------------------------------------------------------------------------
+  anycable_rpc:
+    <<: *default_app
+    container_name: <%= project_name %>-anycable-rpc
+    restart: unless-stopped
+    environment:
+      <<: *default_env
+      ANYCABLE_REDIS_URL: redis://redis_cable:6379/0
+      ANYCABLE_RPC_HOST: 0.0.0.0:50051
+      ANYCABLE_DEBUG: 1
+    networks:
+      - main
+    command: /bin/bash -c "bundle exec anycable"
+    depends_on:
+      - anycable_ws
+      - web
+
+  # ----------------------------------------------------------------------------
+  # Dozzle - Realtime log viewer for docker containers
+  #          https://github.com/amir20/dozzle
+  # ----------------------------------------------------------------------------
+  logs:
+    image: amir20/dozzle
+    container_name: <%= project_name %>-logs
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - ${PORT_LOGS:-3004}:8080
+    restart: unless-stopped
+    command: "--filter name=<%= project_name %>*"
