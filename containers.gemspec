@@ -34,8 +34,8 @@ Gem::Specification.new do |gem|
   gem.add_dependency "rainbow", "~> 3.1.1"
   gem.add_dependency "thor", "~> 1.2.1"
 
-  gem.add_development_dependency "github_changelog_generator", "~> 1.16.4"
-  gem.add_development_dependency "ruby_jard", "~> 0.3.1"
+  gem.add_development_dependency "pry"
+  gem.add_development_dependency "pry-byebug"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
