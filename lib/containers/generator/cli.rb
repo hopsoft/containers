@@ -1,4 +1,8 @@
+# frozen_string_literal: true
+
 require "erb"
+require "net/http"
+require "uri"
 
 module Containers::Generator
   class CLI < Thor
@@ -19,9 +23,21 @@ module Containers::Generator
       ERB.new raw_template(template_name)
     end
 
-    def render(template_name, vars = {})
+    def render_template(template_name, vars = {})
       view = Struct.new(*vars.keys).new(*vars.values).instance_eval { binding }
       erb_template(template_name).result view
+    end
+
+    def render_external_template(template, vars = {})
+      view = Struct.new(*vars.keys).new(*vars.values).instance_eval { binding }
+
+      raw_template = if template.start_with?("http")
+        Net::HTTP.get URI.parse(template)
+      else
+        File.read template
+      end
+
+      ERB.new(raw_template).result view
     end
   end
 end

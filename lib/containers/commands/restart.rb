@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Containers::CLI < Thor
   desc "restart", "Restarts container(s)"
   method_option :container, type: :array, aliases: "-c", desc: "A list of container short names"

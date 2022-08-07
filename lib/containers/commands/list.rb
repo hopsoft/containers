@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Containers::CLI < Thor
   desc "list", "Lists all containers for this project"
   method_option :detailed, type: :boolean, aliases: "-d", desc: "List detailed container information"

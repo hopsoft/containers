@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Containers::CLI < Thor
   desc "exec", "Executes a command in a container"
   method_option :container, type: :string, aliases: "-c", default: "shell", desc: "The short name for the container"
