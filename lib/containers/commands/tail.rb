@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Containers::CLI < Thor
   desc "tail", "Tails container logs"
   method_option :container, type: :array, aliases: "-c", required: true, desc: "The short name for the container (also supports a list of names)"

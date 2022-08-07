@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Containers::CLI < Thor
   desc "start", "Starts container(s)"
   method_option :container, type: :string, aliases: "-c", desc: "The short name for the container"
