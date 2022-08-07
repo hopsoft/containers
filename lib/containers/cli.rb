@@ -5,7 +5,7 @@ require "thor"
 require "rainbow"
 require "active_support/all"
 require_relative "concerns/commandable"
-require_relative "subcommands/generate"
+require_relative "generator/cli"
 
 module Containers
   class CLI < Thor
@@ -14,7 +14,7 @@ module Containers
     Dir["commands/**/*.rb", base: __dir__].each { |f| require_relative f }
 
     desc "generate", "Commands used to generate files for the project"
-    subcommand "generate", Generate
+    subcommand "generate", Generator::CLI
 
     protected
 

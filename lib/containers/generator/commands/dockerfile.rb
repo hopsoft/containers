@@ -1,4 +1,4 @@
-class Containers::Generate < Thor
+class Containers::Generator::CLI < Thor
   desc "dockerfile", "Creates a Dockerfile for the project"
   def dockerfile
     path = File.expand_path("Dockerfile")
