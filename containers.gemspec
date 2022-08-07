@@ -20,21 +20,15 @@ Gem::Specification.new do |gem|
   gem.metadata["source_code_uri"] = gem.homepage
   gem.metadata["changelog_uri"] = "#{gem.homepage}/CHANGELOG.md"
 
-  # Specify which files should be added to the gem when it is released.
-  # The `git ls-files -z` loads the files in the RubyGem that have been added into git.
-  gem.files = Dir.chdir(File.expand_path(__dir__)) do
-    `git ls-files -z`.split("\x0").reject do |f|
-      (f == __FILE__) || f.match(%r{\A(?:(?:bin|test|spec|features)/|\.(?:git|travis|circleci)|appveyor)})
-    end
-  end
+  gem.files = Dir["lib/**/*", "sig/**/*", "exe/**/*"]
   gem.bindir = "exe"
   gem.executables = gem.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   gem.require_paths = ["lib"]
 
-  gem.add_dependency "rainbow", "~> 3.1.1"
-  gem.add_dependency "thor", "~> 1.2.1"
+  gem.add_dependency "rainbow", ">= 3.1"
+  gem.add_dependency "thor", ">= 1.2"
+  gem.add_dependency "activesupport", ">= 6.0"
 
-  gem.add_development_dependency "pry"
   gem.add_development_dependency "pry-byebug"
 
   # For more information and examples about making a new gem, check out our
