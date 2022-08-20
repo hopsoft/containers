@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
+require_relative "../../concerns/configurable"
+
 class Containers::Generator::CLI < Thor
+  include ::Containers::Configurable
+
   desc "dockerfile", "Creates a Dockerfile for the project"
   method_option :template, type: :string, aliases: "-t", desc: "The Dockerfile template to use (can be a local file or a URL)"
   def dockerfile
-    path = File.expand_path("Dockerfile")
+    path = File.expand_path("#{docker_dir}/Dockerfile")
 
     continue = if File.exist?(path)
       ask("#{Rainbow("Dockerfile already exists").red} Overwrite?", default: "Y").to_s.upcase == "Y"

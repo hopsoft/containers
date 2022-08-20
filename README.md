@@ -1,6 +1,14 @@
 # Containers
 
-WIP: Use at your own risk!
+### Configuration
+
+You are able to configure the generator defaults by adding a `.containers.yml` file to your root folder.
+
+```yaml
+docker_dir: "."
+app_dir: "."
+project_name: "my-project"
+```
 
 ## TODOs
 
