@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "fileutils"
 require_relative "../../concerns/configurable"
 
 class Containers::Generator::CLI < Thor
@@ -8,7 +9,8 @@ class Containers::Generator::CLI < Thor
   desc "compose", "Creates a docker-compose.yml file for the project"
   method_option :template, type: :string, aliases: "-t", desc: "The docker-compose.yml template to use (can be a local file or a URL)"
   def compose
-    path = File.expand_path("#{docker_dir}/docker-compose.yml")
+    FileUtils.mkdir_p docker_directory
+    path = File.expand_path("#{docker_directory}/docker-compose.yml")
 
     continue = if File.exist?(path)
       ask("#{Rainbow("docker-compose.yml already exists").red} Overwrite?", default: "Y").to_s.upcase == "Y"
@@ -18,9 +20,11 @@ class Containers::Generator::CLI < Thor
 
     return unless continue
 
-    o_name = ask("What is your organization name? (lowercase, dasherized)", default: "my-org").to_s
-    p_name = ask("What is your project name? (lowercase, dasherized)", default: project_name).to_s
-    vars = {organization_name: o_name, project_name: p_name}
+    vars = {
+      organization_name: ask("What is the organization name? (lowercase, dasherized)", default: organization_name).to_s,
+      project_name: ask("What is the project name? (lowercase, dasherized)", default: project_name).to_s,
+      app_directory: File.expand_path(ask("What is the application directory? ", default: app_directory).to_s)
+    }
 
     contents = if options[:template]
       render_external_template options[:template], vars
