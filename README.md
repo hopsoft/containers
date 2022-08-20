@@ -5,9 +5,11 @@
 You are able to configure the generator defaults by adding a `.containers.yml` file to your root folder.
 
 ```yaml
-docker_dir: "."
-app_dir: "."
+---
+organization_name: "my-organization"
 project_name: "my-project"
+app_directory: "."
+docker_directory: "."
 ```
 
 ## TODOs

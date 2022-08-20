@@ -18,18 +18,13 @@ x-default-app: &default_app
   working_dir: /<%= project_name %>
   tty: true
   stdin_open: true
-  env_file: .env
+  env_file: <%= File.join app_directory, ".env" %>
   environment:
     <<: *default_env
-  networks:
-    - main
   volumes:
-    - ./:/<%= project_name %>:cached
+    - <%= app_directory %>:/<%= project_name %>:cached
     - bundle:/bundle:delegated
     - node_modules:/<%= project_name %>/node_modules:delegated
-
-networks:
-  main:
 
 # TODO: dump pg database then rename db -> postgres
 volumes:
@@ -50,8 +45,6 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: password
-    networks:
-      - main
     expose:
       - 5432
     volumes:
@@ -64,13 +57,11 @@ services:
     image: redis:6.2.6-alpine3.14
     container_name: <%= project_name %>-redis-cable
     restart: unless-stopped
-    networks:
-      - main
     expose:
       - 6379
     volumes:
       - redis_cable:/data:delegated
-      - ./config/redis-queue.conf:/usr/local/etc/redis/redis.conf:cached
+      - <%= File.expand_path File.join(File.dirname(__FILE__), "redis/queue.conf") %>:/usr/local/etc/redis/redis.conf:cached
 
   # ----------------------------------------------------------------------------
   # Redis - Cache datastore
@@ -79,13 +70,11 @@ services:
     image: redis:6.2.6-alpine3.14
     container_name: <%= project_name %>-redis-cache
     restart: unless-stopped
-    networks:
-      - main
     expose:
       - 6379
     volumes:
       - redis_cache:/data:delegated
-      - ./config/redis-cache.conf:/usr/local/etc/redis/redis.conf:cached
+      - <%= File.expand_path File.join(File.dirname(__FILE__), "redis/cache.conf") %>:/usr/local/etc/redis/redis.conf:cached
 
   # ----------------------------------------------------------------------------
   # Redis - Queue datastore
@@ -94,13 +83,11 @@ services:
     image: redis:6.2.6-alpine3.14
     container_name: <%= project_name %>-redis-queue
     restart: unless-stopped
-    networks:
-      - main
     expose:
       - 6379
     volumes:
       - redis_queue:/data:delegated
-      - ./config/redis-queue.conf:/usr/local/etc/redis/redis.conf:cached
+      - <%= File.expand_path File.join(File.dirname(__FILE__), "redis/queue.conf") %>:/usr/local/etc/redis/redis.conf:cached
 
   # ----------------------------------------------------------------------------
   # Shell - Intended for tinkering and running misc commands
@@ -176,8 +163,6 @@ services:
       ANYCABLE_REDIS_URL: redis://redis_cable:6379/0
       ANYCABLE_RPC_HOST: anycable_rpc:50051
       ANYCABLE_DEBUG: 1
-    networks:
-      - main
     ports:
       - ${PORT_ANYCABLE:-3001}:8080
     depends_on:
@@ -195,8 +180,6 @@ services:
       ANYCABLE_REDIS_URL: redis://redis_cable:6379/0
       ANYCABLE_RPC_HOST: 0.0.0.0:50051
       ANYCABLE_DEBUG: 1
-    networks:
-      - main
     command: /bin/bash -c "bundle exec anycable"
     depends_on:
       - anycable_ws

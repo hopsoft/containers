@@ -3,30 +3,35 @@
 module Containers::Configurable
   extend ActiveSupport::Concern
 
-  DEFAULT_CONFIG = {
-    "docker_dir" => ".",
-    "app_dir" => ".",
-    "project_name" => File.basename(Dir.pwd).parameterize
+  DEFAULT_CONFIGURATION = {
+    "organization_name" => "example-organization",
+    "project_name" => File.basename(Dir.pwd).parameterize,
+    "app_directory" => ".",
+    "docker_directory" => "."
   }.freeze
 
+  def organization_name
+    configuration["organization_name"]
+  end
+
   def project_name
-    config["project_name"]
+    configuration["project_name"]
   end
 
-  def docker_dir
-    config["docker_dir"]
+  def app_directory
+    configuration["app_directory"]
   end
 
-  def app_dir
-    config["app_dir"]
+  def docker_directory
+    configuration["docker_directory"]
   end
 
-  def config
-    @config ||=
+  def configuration
+    @configuration ||=
       if File.exist?(".containers.yml")
         YAML.load_file(".containers.yml")
       else
-        DEFAULT_CONFIG
+        DEFAULT_CONFIGURATION
       end
   end
 end
