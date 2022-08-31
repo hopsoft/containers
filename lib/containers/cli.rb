@@ -44,13 +44,13 @@ module Containers
 
     def requested_container_names
       return options[:container].compact if options[:container]
-      return requested_service_names.map { |name| container_name name }.compact
+      return requested_service_names.map { |name| container_name name }.compact if options[:service]
       container_names
     end
 
     def requested_service_names
       return options[:service].compact if options[:service]
-      return requested_container_names(options).map { |name| service_name name }.compact
+      return requested_container_names(options).map { |name| service_name name }.compact if options[:container]
       service_names
     end
   end
