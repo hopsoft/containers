@@ -8,7 +8,7 @@ class Containers::CLI < Thor
     return execute_command "docker ps -a | grep #{project_name}" if options[:detailed]
 
     if options[:service]
-      command = "containers list -f"
+      command = "containers list"
       puts_command "#{command} | #{Rainbow("(strip project name)").green.faint}"
       list = `#{command}`.split("\n").reject { |item| item.strip == "" || item.include?(PREFIX) }
       puts list.map { |item| item.gsub(/\A#{project_name}-|\s/, "") }.sort.join("\n")
