@@ -20,8 +20,38 @@ module Containers
 
     protected
 
+    def container_name(service_name)
+      return nil unless service_name
+      "#{project_name}-#{service_name}"
+    end
+
+    def service_name(container_name)
+      return nil unless container_name
+      container_name.sub(/\A#{project_name}-/, "")
+    end
+
+    def service_names
+      `containers list -s`.split("\n").reject do |line|
+        line.nil? || line.empty? || line.include?(Containers::Commandable::PREFIX)
+      end
+    end
+
     def container_names
-      `containers list -f`.split("\n")
+      `containers list`.split("\n").reject do |line|
+        line.nil? || line.empty? || line.include?(Containers::Commandable::PREFIX)
+      end
+    end
+
+    def requested_container_names
+      return options[:container].compact if options[:container]
+      return requested_service_names.map { |name| container_name name }.compact if options[:service]
+      container_names
+    end
+
+    def requested_service_names
+      return options[:service].compact if options[:service]
+      return requested_container_names(options).map { |name| service_name name }.compact if options[:container]
+      service_names
     end
   end
 end
