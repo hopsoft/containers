@@ -69,15 +69,13 @@ GEM
       rubocop-performance (~> 1.16.0)
     standardrb (1.0.1)
       standard
-    thor (1.2.1)
+    thor (1.2.2)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
 
 PLATFORMS
-  arm64-darwin-21
   arm64-darwin-22
-  x86_64-linux
 
 DEPENDENCIES
   containers!
@@ -87,4 +85,4 @@ DEPENDENCIES
   standardrb
 
 BUNDLED WITH
-   2.4.6
+   2.4.10
