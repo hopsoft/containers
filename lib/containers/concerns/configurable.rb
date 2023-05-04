@@ -7,7 +7,8 @@ module Containers::Configurable
     "organization_name" => "example-organization",
     "project_name" => File.basename(Dir.pwd).parameterize,
     "app_directory" => ".",
-    "docker_directory" => "."
+    "docker_directory" => ".",
+    "default_service" => nil
   }.freeze
 
   def organization_name
@@ -24,6 +25,10 @@ module Containers::Configurable
 
   def docker_directory
     configuration["docker_directory"]
+  end
+
+  def default_service
+    configuration["default_service"]
   end
 
   def configuration

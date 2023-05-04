@@ -21,6 +21,7 @@ module Containers
     protected
 
     def container_name(service_name)
+      service_name ||= default_service
       return nil unless service_name
       "#{project_name}-#{service_name}"
     end
