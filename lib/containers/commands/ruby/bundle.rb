@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
 class Containers::CLI < Thor
-  desc "bash", "Starts a bash shell"
+  desc "bundle", "Runs the bundle command"
   method_option :container, type: :string, aliases: "-c", desc: "The container name"
   method_option :service, type: :string, aliases: "-s", default: "shell", desc: "The service name"
-  def bash(*args)
+  def bundle(*args)
     container = options[:container] || container_name(options[:service])
-    execute_command "containers exec -c #{container} bash #{args.join " "}"
+    execute_command "containers exec -c #{container} bundle #{args.join " "}"
   end
 end
