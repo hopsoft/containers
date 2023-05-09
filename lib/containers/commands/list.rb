@@ -5,13 +5,13 @@ class Containers::CLI < Thor
   method_option :detailed, type: :boolean, aliases: "-d", desc: "List detailed container information"
   method_option :service, type: :boolean, aliases: "-s", desc: "List container service names"
   def list(*args)
-    return execute_command "docker ps -a | grep #{project_name}" if options[:detailed]
+    return execute_command "docker ps -a | grep #{app_name}" if options[:detailed]
 
     if options[:service]
       command = "containers list"
-      puts_command "#{command} | #{Rainbow("(strip project name)").green.faint}"
+      puts_command "#{command} | #{Rainbow("(strip app name)").green.faint}"
       list = `#{command}`.split("\n").reject { |item| item.strip == "" || item.include?(PREFIX) }
-      puts list.map { |item| item.gsub(/\A#{project_name}-|\s/, "") }.sort.join("\n")
+      puts list.map { |item| item.gsub(/\A#{app_name}-|\s/, "") }.sort.join("\n")
       return
     end
 

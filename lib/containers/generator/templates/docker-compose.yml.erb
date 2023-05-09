@@ -14,17 +14,17 @@ x-default-env: &default_env
 
 x-default-app: &default_app
   build: .
-  image: <%= organization_name %>/<%= project_name %>
-  working_dir: /<%= project_name %>
+  image: <%= organization[:name] %>/<%= app[:name] %>
+  working_dir: /<%= app[:name] %>
   tty: true
   stdin_open: true
-  env_file: <%= File.join app_directory, ".env" %>
+  env_file: <%= File.join app[:directory], ".env" %>
   environment:
     <<: *default_env
   volumes:
-    - <%= app_directory %>:/<%= project_name %>:cached
+    - <%= app[:directory] %>:/<%= app[:name] %>:cached
     - bundle:/bundle:delegated
-    - node_modules:/<%= project_name %>/node_modules:delegated
+    - node_modules:/<%= app[:name] %>/node_modules:delegated
 
 # TODO: dump pg database then rename db -> postgres
 volumes:
@@ -41,7 +41,7 @@ services:
   # ----------------------------------------------------------------------------
   postgres:
     image: postgres:13.4-alpine3.14
-    container_name: <%= project_name %>-postgres
+    container_name: <%= app[:name] %>-postgres
     restart: unless-stopped
     environment:
       POSTGRES_PASSWORD: password
@@ -55,7 +55,7 @@ services:
   # ----------------------------------------------------------------------------
   redis_cable:
     image: redis:6.2.6-alpine3.14
-    container_name: <%= project_name %>-redis-cable
+    container_name: <%= app[:name] %>-redis-cable
     restart: unless-stopped
     expose:
       - 6379
@@ -68,7 +68,7 @@ services:
   # ----------------------------------------------------------------------------
   redis_cache:
     image: redis:6.2.6-alpine3.14
-    container_name: <%= project_name %>-redis-cache
+    container_name: <%= app[:name] %>-redis-cache
     restart: unless-stopped
     expose:
       - 6379
@@ -81,7 +81,7 @@ services:
   # ----------------------------------------------------------------------------
   redis_queue:
     image: redis:6.2.6-alpine3.14
-    container_name: <%= project_name %>-redis-queue
+    container_name: <%= app[:name] %>-redis-queue
     restart: unless-stopped
     expose:
       - 6379
@@ -94,7 +94,7 @@ services:
   # ----------------------------------------------------------------------------
   shell:
     <<: *default_app
-    container_name: <%= project_name %>-shell
+    container_name: <%= app[:name] %>-shell
     command: /bin/bash -c "tail -f /dev/null"
 
   # ----------------------------------------------------------------------------
@@ -102,7 +102,7 @@ services:
   # ----------------------------------------------------------------------------
   js:
     <<: *default_app
-    container_name: <%= project_name %>-js
+    container_name: <%= app[:name] %>-js
     command: /bin/bash -c "yarn && yarn build --watch"
 
   # ----------------------------------------------------------------------------
@@ -110,7 +110,7 @@ services:
   # ----------------------------------------------------------------------------
   css:
     <<: *default_app
-    container_name: <%= project_name %>-css
+    container_name: <%= app[:name] %>-css
     command: /bin/bash -c "yarn build:css --watch"
     depends_on:
       - js
@@ -120,7 +120,7 @@ services:
   # ----------------------------------------------------------------------------
   web:
     <<: *default_app
-    container_name: <%= project_name %>-web
+    container_name: <%= app[:name] %>-web
     command: >
       /bin/bash -c "bundle &&
                     rm -f tmp/pids/server.pid &&
@@ -145,7 +145,7 @@ services:
   # ----------------------------------------------------------------------------
   worker:
     <<: *default_app
-    container_name: <%= project_name %>-worker
+    container_name: <%= app[:name] %>-worker
     command: /bin/bash -c "bin/rails log:clear &&
                            bundle exec sidekiq -C config/sidekiq.yml"
     depends_on:
@@ -156,7 +156,7 @@ services:
   # ----------------------------------------------------------------------------
   anycable_ws:
     image: anycable/anycable-go:1.2
-    container_name: <%= project_name %>-anycable-ws
+    container_name: <%= app[:name] %>-anycable-ws
     restart: unless-stopped
     environment:
       ANYCABLE_HOST: "0.0.0.0"
@@ -173,7 +173,7 @@ services:
   # ----------------------------------------------------------------------------
   anycable_rpc:
     <<: *default_app
-    container_name: <%= project_name %>-anycable-rpc
+    container_name: <%= app[:name] %>-anycable-rpc
     restart: unless-stopped
     environment:
       <<: *default_env
@@ -191,10 +191,10 @@ services:
   # ----------------------------------------------------------------------------
   logs:
     image: amir20/dozzle
-    container_name: <%= project_name %>-logs
+    container_name: <%= app[:name] %>-logs
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - ${PORT_LOGS:-3004}:8080
     restart: unless-stopped
-    command: "--filter name=<%= project_name %>*"
+    command: "--filter name=<%= app[:name] %>*"
