@@ -9,7 +9,7 @@ class Containers::CLI < Thor
 
     if options[:service]
       command = "containers list"
-      puts_command "#{command} | #{Rainbow("(strip app name)").green.faint}"
+      puts_command "#{command} | #{Rainbow("(strip app_name)").green.faint}"
       list = `#{command}`.split("\n").reject { |item| item.strip == "" || item.include?(PREFIX) }
       puts list.map { |item| item.gsub(/\A#{app_name}-|\s/, "") }.sort.join("\n")
       return
