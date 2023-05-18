@@ -32,14 +32,6 @@ docker:
 
 - [ ] recipes _(punt for now)_
 
-  - sinatra?
-  - rails?
-  - anycable?
-  - actioncable?
-  - caching? (redis)
-  - background jobs?
-    - backend? (sidekiq, ...)
-
     ```sh
     containers add RECIPE [URL]
     containers remove RECIPE
@@ -48,3 +40,11 @@ docker:
     Where should we store recipes? `./.containers/recipes`?
 
     Should add/remove recipe modify `compose_files` in `.containers.yml`?
+
+  - sinatra?
+  - rails?
+  - anycable?
+  - actioncable?
+  - caching? (redis)
+  - background jobs?
+    - backend? (sidekiq, ...)
