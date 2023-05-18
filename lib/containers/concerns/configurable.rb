@@ -3,27 +3,52 @@
 module Containers::Configurable
   extend ActiveSupport::Concern
 
+  def self.gitname
+    email = begin
+      `git config --get user.email`.strip
+    rescue
+      nil
+    end
+    email&.split("@")&.first || "example"
+  end
+
   DEFAULT_CONFIGURATION = {
-    "organization_name" => "example-organization",
-    "project_name" => File.basename(Dir.pwd).parameterize,
-    "app_directory" => ".",
-    "docker_directory" => "."
+    "organization" => {
+      "name" => gitname
+    },
+    "app" => {
+      "name" => File.basename(Dir.pwd).parameterize,
+      "directory" => "."
+    },
+    "docker" => {
+      "directory" => ".",
+      "default_service" => nil,
+      "compose_files" => ["docker-compose.yml"]
+    }
   }.freeze
 
   def organization_name
-    configuration["organization_name"]
+    configuration["organization"]["name"]
   end
 
-  def project_name
-    configuration["project_name"]
+  def app_name
+    configuration["app"]["name"]
   end
 
   def app_directory
-    configuration["app_directory"]
+    configuration["app"]["directory"]
   end
 
   def docker_directory
-    configuration["docker_directory"]
+    configuration["docker"]["directory"]
+  end
+
+  def docker_default_service
+    configuration["docker"]["default_service"]
+  end
+
+  def docker_compose_files
+    configuration["docker"]["compose_files"]
   end
 
   def configuration

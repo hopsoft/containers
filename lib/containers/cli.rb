@@ -21,13 +21,14 @@ module Containers
     protected
 
     def container_name(service_name)
+      service_name ||= docker_default_service
       return nil unless service_name
-      "#{project_name}-#{service_name}"
+      "#{app_name}-#{service_name}"
     end
 
     def service_name(container_name)
       return nil unless container_name
-      container_name.sub(/\A#{project_name}-/, "")
+      container_name.sub(/\A#{app_name}-/, "")
     end
 
     def service_names

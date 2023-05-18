@@ -1,5 +1,15 @@
 ---
-organization_name: <%= organization_name %>
-project_name: <%= project_name %>
-app_directory: <%= app_directory %>
-docker_directory: <%= docker_directory %>
+organization:
+  name: <%= organization_name %>
+
+app:
+  name: <%= app_name %>
+  directory: <%= app_directory %>
+
+docker:
+  directory: <%= docker[:directory] %>
+  default_service: <%= docker[:default_service] %>
+  compose_files:
+<% docker[:compose_files].each do |file| -%>
+    - <%= file %>
+<% end -%>

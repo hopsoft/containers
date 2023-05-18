@@ -25,11 +25,15 @@ Gem::Specification.new do |gem|
   gem.executables = gem.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   gem.require_paths = ["lib"]
 
-  gem.add_dependency "rainbow", ">= 3.1"
-  gem.add_dependency "thor", ">= 1.2"
   gem.add_dependency "activesupport", ">= 6.0"
+  gem.add_dependency "rainbow", ">= 3.1"
+  gem.add_dependency "rake"
+  gem.add_dependency "thor", ">= 1.2"
 
+  gem.add_development_dependency "magic_frozen_string_literal"
+  gem.add_development_dependency "minitest"
   gem.add_development_dependency "pry-byebug"
+  gem.add_development_dependency "standardrb"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html

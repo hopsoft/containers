@@ -11,14 +11,18 @@ class Containers::Generator::CLI < Thor
   def dockerfile
     FileUtils.mkdir_p docker_directory
     path = File.expand_path("#{docker_directory}/Dockerfile")
+    exists = File.exist?(path)
+    original = File.read(path) if exists
 
-    continue = if File.exist?(path)
-      ask("#{Rainbow("Dockerfile already exists").red} Overwrite?", default: "Y").to_s.upcase == "Y"
+    continue = if exists
+      ask("#{Rainbow("Dockerfile already exists").red} Overwrite?", default: "n").to_s.upcase == "Y"
     else
       true
     end
 
     return unless continue
+
+    FileUtils.rm_f path
 
     ruby_version = ask("What Ruby version does this project use?", default: "3.1.2").to_s
     vars = {ruby_version: ruby_version}
@@ -32,5 +36,11 @@ class Containers::Generator::CLI < Thor
     puts_command Rainbow("(Create #{path})").green.faint
     File.write path, contents
     puts Rainbow("Dockerfile created successfully").green.bright
+  rescue => error
+    puts Rainbow("Unexpected error! #{error.message}").red.bright
+    if exists && original
+      puts Rainbow("Restoring the original file.").green.faint
+      File.write path, original
+    end
   end
 end
