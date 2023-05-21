@@ -10,5 +10,5 @@ class Containers::CLI < Thor
     execute_command "docker exec -it #{container} #{args.join " "}"
   end
 
-  map x: :exec
+  map "x" => :exec
 end

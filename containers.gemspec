@@ -26,6 +26,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_dependency "activesupport", ">= 6.0"
+  gem.add_dependency "awesome_print", ">= 1.9"
   gem.add_dependency "rainbow", ">= 3.1"
   gem.add_dependency "rake"
   gem.add_dependency "thor", ">= 1.2"

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "pry-byebug"
 require "thor"
+require "awesome_print"
 require "rainbow"
 require "active_support/all"
 require_relative "concerns/commandable"

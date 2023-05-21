@@ -2,6 +2,7 @@
 
 class Containers::CLI < Thor
   desc "list", "Lists all containers for this project"
+  long_desc "Also aliased as `ls` for convenience"
   method_option :detailed, type: :boolean, aliases: "-d", desc: "List detailed container information"
   method_option :service, type: :boolean, aliases: "-s", desc: "List container service names"
   def list(*args)
@@ -20,4 +21,6 @@ class Containers::CLI < Thor
     list = `#{command}`.split("\n").reject { |item| item.strip == "" || item.include?(PREFIX) }
     puts list.map { |item| item.split(" ").last.strip }.sort.join("\n")
   end
+
+  map "ls" => :list
 end
