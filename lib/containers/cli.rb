@@ -16,7 +16,9 @@ module Containers
     Dir["commands/**/*.rb", base: __dir__].each { |f| require_relative f }
 
     desc "generate", "Commands used to generate files for the project"
+    long_desc "Also aliased as `init`"
     subcommand "generate", Generator::CLI
+    map "init" => :generate
 
     protected
 
