@@ -6,7 +6,7 @@ class Containers::CLI < Thor
   method_option :service, type: :array, aliases: "-s", desc: "A list of service names (space delimited)"
   def start(*args)
     requested_container_names(*args) do |container|
-      execute_command "docker start #{sanitize_args(*args).join " "} #{container}", replace_current_process: false
+      execute_command "docker start #{arguments(*args)} #{container}", replace_current_process: false
     end
   end
 end

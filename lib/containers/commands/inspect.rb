@@ -6,7 +6,7 @@ class Containers::CLI < Thor
   method_option :service, type: :string, aliases: "-s", desc: "The service name"
   def inspect(*args)
     requested_container_names(*args) do |container|
-      execute_command "docker inspect #{args.join " "} #{container}"
+      execute_command "docker inspect #{arguments(*args)} #{container}"
     end
   end
 end

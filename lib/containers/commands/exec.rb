@@ -6,8 +6,9 @@ class Containers::CLI < Thor
   method_option :container, type: :string, aliases: "-c", desc: "The container name"
   method_option :service, type: :string, aliases: "-s", desc: "The service name"
   def exec(*args)
-    container = options[:container] || container_name(options[:service])
-    execute_command "docker exec -it #{container} #{args.join " "}"
+    requested_container_names(*args) do |container|
+      execute_command "docker exec -it #{container} #{arguments(*args)}"
+    end
   end
 
   map "x" => :exec
