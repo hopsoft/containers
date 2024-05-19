@@ -22,8 +22,7 @@ module Containers
 
     protected
 
-    def container_name(service_name)
-      service_name ||= docker_default_service
+    def container_name(service_name = docker_default_service)
       return nil unless service_name
       "#{app_name}-#{service_name}"
     end
@@ -45,16 +44,49 @@ module Containers
       end
     end
 
-    def requested_container_names
-      return options[:container].compact if options[:container]
-      return requested_service_names.map { |name| container_name name }.compact if options[:service]
-      container_names
+    def requested_container_names(*args)
+      # explicitly requested container option
+      list = options[:container] if options[:container]
+
+      # determine container names based on service names
+      list ||= requested_service_names(*args).map { |name| container_name name }
+
+      # fallback to all known container names
+      list = container_names if list.none?
+
+      list.each { |name| yield name if name.present? } if block_given?
+      list
     end
 
-    def requested_service_names
-      return options[:service].compact if options[:service]
-      return requested_container_names(options).map { |name| service_name name }.compact if options[:container]
-      service_names
+    def requested_service_names(*args)
+      # explicitly requested service option
+      list = options[:service] if options[:service]
+
+      # extract service names from passed arguments
+      list ||= extract_service_names(*args).map { |name| service_name name }
+
+      # determine service names based on container names
+      list ||= requested_container_names(*args).map { |name| service_name name } if options[:container]
+
+      # fallback to all known service names
+      list = service_names if list.none?
+
+      list.each { |name| yield name if name.present? } if block_given?
+      list
+    end
+
+    def sanitize_args(*args)
+      services = extract_service_names(*args)
+      args.shift while args.any? && services.include?(args.first)
+      args.select(&:present?)
+    end
+
+    private
+
+    def extract_service_names(*args)
+      services = []
+      services.push args.shift until args.none? || args.first.start_with?("-")
+      services
     end
   end
 end
